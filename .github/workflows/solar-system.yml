@@ -40,4 +40,22 @@ jobs:
               with:
                 name: Artifacts upload ${{ matrix.nodejs_version}}-${{ matrix.os }}
                 path: test-results.xml
+       
+    code-coverage:
+        name: code-coverage
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout repository
+              uses: actions/checkout@v5
+
+            - name: nodejs setup version 18
+              uses: actions/setup-node@v5
+            
+            - name: Installation npm
+              run: npm install
+
+            - name: run code coverage
+              continue-on-error: true
+              run: npm run coverage
+
             
