@@ -13,19 +13,31 @@ env:
 jobs:
     unit-testing:
         name: unit testing
-        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+              os: [ubuntu-latest, macos-latest]
+              nodejs_version: [18, 19, 20]
+            max-parallel: 3
+            fail-fast: false
+        runs-on: ${{ matrix.os }}
         steps:
             - name: checkout repository
               uses: actions/checkout@v5
 
-            - name: nodejs setup
+            - name: nodejs setup version ${{ matrix.nodejs_version }}
               uses: actions/setup-node@v5
               with:
-                node-version: 18
+                node-version: ${{ matrix.nodejs_version }}
             
             - name: Installation npm
               run: npm install
 
             - name: Unit testing
               run: npm test
+
+            - name: Archive test results
+              uses: actions/upload-artifact@v4
+              with:
+                name: Artifacts upload
+                path: test-results.xml
             
