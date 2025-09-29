@@ -16,7 +16,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: checkout repository
-              uses: actions/checkout@5
+              uses: actions/checkout@v5
 
             - name: nodejs setup
               uses: actions/setup-node@v5
