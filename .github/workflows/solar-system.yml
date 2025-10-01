@@ -15,8 +15,8 @@ jobs:
         name: unit testing
         strategy:
             matrix:
-              os: [ubuntu-latest, macos-latest]
-              nodejs_version: [18, 19, 20]
+              os: [ubuntu-latest]
+              nodejs_version: [18, 20]
 #            max-parallel: 3
             fail-fast: false
         runs-on: ${{ matrix.os }}
@@ -32,7 +32,7 @@ jobs:
             - name: Cache Dependencies
               uses: actions/cache@v4
               with:
-                 path: node-modules
+                 path: node_modules
                  key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
             
             - name: Installation npm
