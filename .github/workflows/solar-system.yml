@@ -20,6 +20,15 @@ jobs:
 
             fail-fast: false
         runs-on: ${{ matrix.os }}
+        services:
+          mongo-db:
+            image: siddharth67/mongo-db:non-prod
+            ports:
+              - 27017:20717
+        env:
+          MONGO_URI: 'mongodb://localhost:27017/superData'
+          MONGO_USERNAME: non-prod-user
+          MONGO_PASSWORD: non-prod-password
         steps:
             - name: checkout repository
               uses: actions/checkout@v5
@@ -53,12 +62,23 @@ jobs:
     code-coverage:
         name: code-coverage
         runs-on: ubuntu-latest
+        container: 
+          image: node:18
+        services:
+          mongo-db:
+            image: siddharth67/mongo-db:non-prod
+            ports:
+              - 27017:20717
+        env:
+          MONGO_URI: 'mongodb://localhost:27017/superData'
+          MONGO_USERNAME: non-prod-user
+          MONGO_PASSWORD: non-prod-password
         steps:
             - name: checkout repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v5 
 
-            - name: nodejs setup version 18
-              uses: actions/setup-node@v5
+#            - name: nodejs setup version 18
+#              uses: actions/setup-node@v5
 
             - name: Cache Dependencies
               uses: actions/cache@v4
