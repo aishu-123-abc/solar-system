@@ -13,13 +13,6 @@ env:
 jobs:
     unit-testing:
         name: unit testing
-        strategy:
-            matrix:
-              os: [ubuntu-latest]
-              nodejs_version: [18, 20]
-
-            fail-fast: false
-        runs-on: ${{ matrix.os }}
         services:
           mongo-db:
             image: siddharth67/mongo-db:non-prod
@@ -29,6 +22,13 @@ jobs:
           MONGO_URI: 'mongodb://localhost:27017/superData'
           MONGO_USERNAME: non-prod-user
           MONGO_PASSWORD: non-prod-password
+        strategy:
+            matrix:
+              os: [ubuntu-latest]
+              nodejs_version: [18, 20]
+
+            fail-fast: false
+        runs-on: ${{ matrix.os }}
         steps:
             - name: checkout repository
               uses: actions/checkout@v5
