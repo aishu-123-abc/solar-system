@@ -149,6 +149,9 @@ jobs:
     dev-deploy:
       needs: docker
       runs-on: ubuntu-latest
+      permissions: 
+        id-token: write
+        contents: read
       steps:
         - name: checkout repository
           uses: actions/checkout@v5
@@ -169,8 +172,8 @@ jobs:
         - name: set context  
           uses : azure/aks-set-context@v4
           with:
-            resource-group: 'test'
-            cluster-name: 'aa-test-cluster'
+            resource-group: test
+            cluster-name: aa-test-cluster
 
         - name: Fetch kubernetes cluster versions
           run: |
