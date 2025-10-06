@@ -161,6 +161,6 @@ jobs:
 
         - name: Fetch kubernetes cluster versions
           run: |
-            kubectl version --short
+            kubectl version
             echo -----------------------------------
             kubectl get nodes
