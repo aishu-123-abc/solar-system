@@ -90,7 +90,7 @@ jobs:
 
             - name: run code coverage
               continue-on-error: true
-              run: npm run coverage
+              run: npm run coverage 
 
     docker:
       name: containerization
