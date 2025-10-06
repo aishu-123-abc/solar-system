@@ -156,7 +156,7 @@ jobs:
         - name: Install kubectl CLI 
           uses: azure/setup-kubectl@v4
           with:
-            version: '1.32.6'
+            version: 'v1.32.6'
           id: install
 
         - name: Fetch kubernetes cluster versions
