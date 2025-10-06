@@ -2,11 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    spec.ingressClassName: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
 #    cert-manager.io/issuer: letsencrypt-prod
   name: solar-system
   namespace: ${NAMESPACE}
 spec:
+    ingressClassName: nginx
     rules:
     - host: solar-system-${NAMESPACE}.${INGRESS_IP}.nip.io
       http:
