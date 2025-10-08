@@ -153,6 +153,9 @@ jobs:
       permissions: 
         id-token: write
         contents: read
+      environment: 
+        name: development
+        url: http://${{ steps.ingressip.outputs.IP }}
       outputs:
         output1: ${{ steps.ingressip.outputs.IP }}
       steps:
@@ -188,7 +191,7 @@ jobs:
           run: | 
             echo "INGRESS_IP=$(kubectl get svc nginx-ingress-ingress-nginx-controller -n ingress-nginx -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
 
-        - name: Save NGINX CONTROLLER ip to a anv OUTPUT variable
+        - name: Save NGINX CONTROLLER ip to a OUTPUT variable
           id: ingressip
           run: | 
             echo "IP=$(kubectl get svc nginx-ingress-ingress-nginx-controller -n ingress-nginx -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_OUTPUT    
