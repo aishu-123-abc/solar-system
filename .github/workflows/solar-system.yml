@@ -153,6 +153,8 @@ jobs:
       permissions: 
         id-token: write
         contents: read
+      outputs:
+        output1: ${{ steps.ingressip.outputs.IP }}
       steps:
         - name: checkout repository
           uses: actions/checkout@v5
@@ -186,6 +188,11 @@ jobs:
           run: | 
             echo "INGRESS_IP=$(kubectl get svc nginx-ingress-ingress-nginx-controller -n ingress-nginx -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
 
+        - name: Save NGINX CONTROLLER ip to a anv OUTPUT variable
+          id: ingressip
+          run: | 
+            echo "IP=$(kubectl get svc nginx-ingress-ingress-nginx-controller -n ingress-nginx -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_OUTPUT    
+
         - name: Replace Tokens in manifest yamls
           uses: cschleiden/replace-tokens@v1
           with:
@@ -215,4 +222,17 @@ jobs:
         - name: Deploy to AKS dev env
           run: |
             kubectl apply -f kubernetes/development
+    
+    integration-testing:
+      name: Dev Integration Testing
+      needs: dev-deploy
+      runs-on: ubuntu-latest
+      steps: 
+        - name: Test IP address using curl 
+          env: 
+            ipaddress: ${{ needs.dev-deploy.outputs.output1 }}
+          run: |
+            echo $ipaddress
+            echo "----------------------------------------------"
+            curl http://$ipaddress/live -s -k | jq -r .status | grep -i live
         
