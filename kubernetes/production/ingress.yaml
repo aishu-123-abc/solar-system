@@ -2,14 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+#    cert-manager.io/issuer: letsencrypt-prod
   name: solar-system
   namespace: ${NAMESPACE}
 spec:
+    ingressClassName: nginx
     rules:
-    - host: solar-system-${NAMESPACE}.${INGRESS_IP}.nip.io
-      http:
+#    - host: solar-system-${NAMESPACE}.${INGRESS_IP}.nip.io
+    - http:
         paths:
         - backend:
             service:
@@ -18,7 +19,6 @@ spec:
                 number: 3000
           path: /
           pathType: Prefix
-    tls:
-    - hosts:
-      - solar-system-${NAMESPACE}.${INGRESS_IP}.nip.io
-      secretName: ingress-local-tls
+#    tls:
+#    - host: solar-system-${NAMESPACE}.${INGRESS_IP}.nip.io
+#      secretName: ingress-local-tls
