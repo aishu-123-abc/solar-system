@@ -324,7 +324,7 @@ jobs:
         - name: Get the service loadbalancer ip address
           id: loadbalancerip
           run: |
-            echo "LOADBALANCER_IP=$(kubectl get svc solar-system -n production -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV 
+            echo "LOADBALANCER_IP=$(kubectl get svc solar-system -n production -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_OUTPUT 
     
     prod-integration-testing:
       name: prod Integration Testing
