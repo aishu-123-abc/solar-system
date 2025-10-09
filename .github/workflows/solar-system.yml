@@ -250,9 +250,9 @@ jobs:
         contents: read
       environment: 
         name: production
-        url: http://${{ steps.loadbalancerip.outputs.IP }}
+        url: http://${{ steps.loadbalancerip.outputs.LOADBALANCER_IP }}
       outputs:
-        output1: ${{ steps.loadbalancerip.outputs.IP }}
+        output1: ${{ steps.loadbalancerip.outputs.LOADBALANCER_IP }}
       steps:
         - name: checkout repository
           uses: actions/checkout@v5
