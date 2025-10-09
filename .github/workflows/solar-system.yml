@@ -161,7 +161,7 @@ jobs:
         output1: ${{ steps.ingressip.outputs.IP }}
       steps:
         - name: checkout repository
-          uses: actions/checkout@v5
+          uses: actions/checkout@v5 
  
         - name: Install kubectl CLI 
           uses: azure/setup-kubectl@v4
