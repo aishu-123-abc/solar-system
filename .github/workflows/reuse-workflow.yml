@@ -1,0 +1,114 @@
+name: Deployment - Reuse Workflow
+on: 
+    workflow_call: 
+        inputs:
+            mongo-uri:
+                required: true
+                type: string
+            kubectl-version:
+                required: false
+                default: v1.32.6
+                type: string
+                description: provide the required kubectl version
+            k8s-manifest-dir:
+                required: true
+                type: string
+                description: Directoty contains kubernetes manifest files
+                default: kubernetes/
+            environment:
+                default: development
+                description: Provide the Deployment details
+                required: true
+                type: string
+        outputs:
+            application-url:
+                value: ${{ jobs.reuse-deploy.outputs.output1 }}
+        secrets:
+            mongodb-password:
+                required: true
+            azure-clientid:
+                required: true
+            azure-subscriptionid:
+                required: true
+            azure-tenantid:
+                required: true
+
+
+jobs:
+    reuse-deploy:
+        runs-on: ubuntu-latest
+        permissions: 
+            id-token: write
+            contents: read
+        environment: 
+            name: ${{ inputs.environment }}
+            url: http://${{ steps.ingressip.outputs.IP }}
+        outputs:
+            output1: ${{ steps.ingressip.outputs.IP }}
+        steps:
+          - name: checkout repository
+            uses: actions/checkout@v5 
+    
+          - name: Install kubectl CLI 
+            uses: azure/setup-kubectl@v4
+            with:
+                version: '${{ inputs.kubectl-version }}'
+            id: install
+
+          - name: add cluster details
+            uses: azure/login@v2
+            with:
+                client-id: ${{ secrets.azure-clientid }}
+                tenant-id: ${{ secrets.azure-tenantid }}
+                subscription-id: ${{ secrets.azure-subscriptionid }}
+
+          - name: set context  
+            uses : azure/aks-set-context@v4
+            with:
+                resource-group: test
+                cluster-name: aa-test-cluster
+
+          - name: Fetch kubernetes cluster versions
+            run: |
+                kubectl version
+                echo -----------------------------------
+                kubectl get nodes
+
+          - name: Save NGINX CONTROLLER ip to a env variable
+            run: | 
+                echo "INGRESS_IP=$(kubectl get svc nginx-ingress-ingress-nginx-controller -n ingress-nginx -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
+
+          - name: Save NGINX CONTROLLER ip to a OUTPUT variable
+            id: ingressip
+            run: | 
+                echo "IP=$(kubectl get svc nginx-ingress-ingress-nginx-controller -n ingress-nginx -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_OUTPUT    
+
+          - name: Replace Tokens in manifest yamls
+            uses: cschleiden/replace-tokens@v1
+            with:
+                tokenPrefix: '${'
+                tokenSuffix: '}'
+                files: '["${{ inputs.k8s-manifest-dir }}*.yaml"]'
+            env:
+                NAMESPACE: ${{ vars.NAMESPACE }}
+                REPLICAS: ${{ vars.REPLICAS }}
+                K8S_IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+                INGRESS_IP: ${{ env.INGRESS_IP }}
+
+          - name: check files
+            run: |
+                cat ${{ inputs.k8s-manifest-dir }}*.yaml
+
+          - name: create a secret in AKS before deployment
+            run: |
+                kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+                --from-literal=MONGO_URI=${{ inputs.mongo-uri }} \
+                --from-literal=MONGO_USERNAME=${{ vars.MONGO_USERNAME }} \
+                --from-literal=MONGO_PASSWORD=${{ secrets.mongodb-password }} \
+                --save-config \
+                --dry-run=client \
+                -o yaml | kubectl apply -f -
+
+          - name: Deploy to AKS dev env
+            run: |
+                kubectl apply -f ${{ inputs.k8s-manifest-dir }}t

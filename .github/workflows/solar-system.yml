@@ -149,84 +149,18 @@ jobs:
 
     dev-deploy:
       needs: docker
-      runs-on: ubuntu-latest
       if: contains(github.ref, 'feature/')
-      permissions: 
-        id-token: write
-        contents: read
-      environment: 
-        name: development
-        url: http://${{ steps.ingressip.outputs.IP }}
-      outputs:
-        output1: ${{ steps.ingressip.outputs.IP }}
-      steps:
-        - name: checkout repository
-          uses: actions/checkout@v5 
- 
-        - name: Install kubectl CLI 
-          uses: azure/setup-kubectl@v4
-          with:
-            version: 'v1.32.6'
-          id: install
+      uses: ./.github/workflows/reuse-workflow.yml
+      secrets: 
+        mongodb-password: ${{ secrets.MONGO_PASSWORD }}
+        azure-clientid: ${{ secrets.AZURE_CLIENT_ID }}
+        azure-subscriptionid: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        azure-tenantid: ${{ secrets.AZURE_TENANT_ID }}
+      with:
+        mongo-uri: ${{ vars.MONGO_URI }}
+        k8s-manifest-dir: kubernetes/development/
+        environment: development
 
-        - name: add cluster details
-          uses: azure/login@v2
-          with:
-            client-id: ${{ secrets.AZURE_CLIENT_ID }}
-            tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-            subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-        - name: set context  
-          uses : azure/aks-set-context@v4
-          with:
-            resource-group: test
-            cluster-name: aa-test-cluster
-
-        - name: Fetch kubernetes cluster versions
-          run: |
-            kubectl version
-            echo -----------------------------------
-            kubectl get nodes
-
-        - name: Save NGINX CONTROLLER ip to a env variable
-          run: | 
-            echo "INGRESS_IP=$(kubectl get svc nginx-ingress-ingress-nginx-controller -n ingress-nginx -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
-
-        - name: Save NGINX CONTROLLER ip to a OUTPUT variable
-          id: ingressip
-          run: | 
-            echo "IP=$(kubectl get svc nginx-ingress-ingress-nginx-controller -n ingress-nginx -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_OUTPUT    
-
-        - name: Replace Tokens in manifest yamls
-          uses: cschleiden/replace-tokens@v1
-          with:
-            tokenPrefix: '${'
-            tokenSuffix: '}'
-            files: '["kubernetes/development/*.yaml"]'
-          env:
-            NAMESPACE: ${{ vars.NAMESPACE }}
-            REPLICAS: ${{ vars.REPLICAS }}
-            K8S_IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
-            INGRESS_IP: ${{ env.INGRESS_IP }}
-
-        - name: check files
-          run: |
-            cat kubernetes/development/*.yaml
-
-        - name: create a secret in AKS before deployment
-          run: |
-            kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
-            --from-literal=MONGO_URI=${{ env.MONGO_URI }} \
-            --from-literal=MONGO_USERNAME=${{ vars.MONGO_USERNAME }} \
-            --from-literal=MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
-            --save-config \
-            --dry-run=client \
-            -o yaml | kubectl apply -f -
-
-        - name: Deploy to AKS dev env
-          run: |
-            kubectl apply -f kubernetes/development
-    
     integration-testing:
       name: Dev Integration Testing
       needs: dev-deploy
@@ -235,7 +169,7 @@ jobs:
       steps: 
         - name: Test IP address using curl 
           env: 
-            ipaddress: ${{ needs.dev-deploy.outputs.output1 }}
+            ipaddress: ${{ needs.dev-deploy.outputs.application-url }}
           run: |
             echo $ipaddress
             echo "----------------------------------------------"
