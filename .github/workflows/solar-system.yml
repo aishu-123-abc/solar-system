@@ -151,6 +151,9 @@ jobs:
       needs: docker
       if: contains(github.ref, 'feature/')
       uses: ./.github/workflows/reuse-workflow.yml
+      permissions: 
+            id-token: write
+            contents: read
       secrets: 
         mongodb-password: ${{ secrets.MONGO_PASSWORD }}
         azure-clientid: ${{ secrets.AZURE_CLIENT_ID }}
