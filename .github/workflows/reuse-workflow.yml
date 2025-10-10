@@ -111,4 +111,4 @@ jobs:
 
           - name: Deploy to AKS dev env
             run: |
-                kubectl apply -f ${{ inputs.k8s-manifest-dir }}t
+                kubectl apply -f ${{ inputs.k8s-manifest-dir }}
