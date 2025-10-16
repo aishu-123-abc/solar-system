@@ -315,3 +315,22 @@ jobs:
             echo $ipaddress
             echo "----------------------------------------------"
             curl http://$ipaddress/live -s -k | jq -r .status | grep -i live
+
+
+    slack-notification:
+      name: Slack Notification
+      needs: [integration-testing, prod-integration-testing ]
+      runs-on: ubuntu-latest
+      if: always()
+      continue-on-error: true
+      steps:
+        - uses: actions/checkout@v4
+        - name: Slack Notification
+          uses: rtCamp/action-slack-notify@v2
+          env:
+            SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }} 
+            SLACK_CHANNEL: github-actions-channel
+            SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
+            SLACK_ICON: https://github.com/rtCamp.png?size=48
+            SLACK_MESSAGE: 'Post Content of solar system workflow : by ${{ github.actor }}'
+            SLACK_TITLE: Information
