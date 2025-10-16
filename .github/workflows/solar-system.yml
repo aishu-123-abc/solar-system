@@ -317,7 +317,7 @@ jobs:
             curl http://$ipaddress/live -s -k | jq -r .status | grep -i live
 
 
-    slack-notification:
+    slack-notification: 
       name: Slack Notification
       needs: [integration-testing, prod-integration-testing ]
       runs-on: ubuntu-latest
