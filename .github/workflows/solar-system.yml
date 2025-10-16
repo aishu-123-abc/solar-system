@@ -96,7 +96,7 @@ jobs:
             - uses: actions/upload-artifact@v4
               with:
                 name: code-coverage-results
-                path: code-coverage.xml
+                path: coverage
 
     report-s3:
       needs: [ code-coverage, unit-testing ]
