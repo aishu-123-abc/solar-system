@@ -93,7 +93,8 @@ jobs:
               continue-on-error: true
               run: npm run coverage 
 
-            - uses: actions/upload-artifact@v4
+            - name: upload code coverage artifacts
+              uses: actions/upload-artifact@v4
               with:
                 name: code-coverage-results
                 path: coverage
@@ -113,10 +114,10 @@ jobs:
 
         - name: Merge Test Files
           run: |
-            ls -ltr/
+            ls -ltr /
             mkdir reports-${{ github.sha }} /
-            mv coverage reports-${{ github.sha }}/
-            mv test-results.xml reports-${{ github.sha }}/
+            mv coverage reports-${{ github.sha }} /
+            mv test-results.xml reports-${{ github.sha }} /
             ls -lart reports-${{ github.sha }}
               
         - name: upload to AWS s3 bucket
